@@ -1,6 +1,6 @@
 """
 行程表模型 —— 用 SQLAlchemy 2.0 声明式 ORM 映射 trip_plan_status / trip_plan_output 两张表。
-
+把 PostgreSQL 里的表映射成 Python 类（SQLAlchemy ORM），就是这个文件的主要作用。
 字段不是随手定的，而是跟 migrations/create_trip_plan_tables.sql 一比一对齐的
 （列名大小写、可空性、默认值都靠那张 DDL 说话）。改表结构时两边必须一起改。
 

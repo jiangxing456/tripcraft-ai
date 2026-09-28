@@ -126,7 +126,7 @@ def _make_fallback_output(duration=4, start="2026-10-01"):
         destination_text="目的地调研内容",
         flight_text="航班内容",
         hotel_text="酒店内容",
-        restaurant_text="餐厅内容",
+        dining_text="餐厅内容",
         itinerary_text="行程内容",
         budget_text="预算内容",
     )

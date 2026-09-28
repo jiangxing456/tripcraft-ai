@@ -11,8 +11,8 @@ load_dotenv()
 logger.info("Loaded environment variables")
 
 logger.info("Loading agents")
-from agents.flight import flight_search_agent
-from agents.hotel import hotel_search_agent
+from agents.flight import flight_agent
+from agents.hotel import hotel_agent
 logger.info("Loaded agents")
 
 # structured_output_agent = Agent(
@@ -42,13 +42,13 @@ logger.info("Loaded agents")
 #     response_model=FlightResults,
 # )
 
-# response = flight_search_agent.run("""
+# response = flight_agent.run("""
 #     Give me flights from Mumbai to Singapore for premium economy on 1 july 2025 for 2 adults and 1 child and sort by cheapest
 # """)
 
 # print(response.content)
 
-response = hotel_search_agent.run("""
+response = hotel_agent.run("""
     Give me hotels in Singapore for 2 adults and 1 child on 1 july 2025 to 10 july 2025 and sort by cheapest
 """)
 

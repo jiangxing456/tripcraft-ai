@@ -1,16 +1,5 @@
 """
 旅行计划服务层 —— 整个项目的业务主流程。
-
-流程（一步一步来）：
-    1. 把用户填的旅行需求渲染成 Markdown（给 AI 看的提示词上下文）
-    2. 依次调用 6 个专职 Agent，每个负责一个方面：
-          目的地 → 航班 → 酒店 → 餐厅 → 逐日行程 → 预算
-    3. 把 6 个 Agent 的输出拼成一大段文本，交给 LLM 转成结构化 JSON
-    4. 转换失败就走「确定性兜底」（不靠 AI，按模板拼 JSON），保证永远有结果
-    5. 全程把执行状态写进数据库，前端据此显示进度
-
-注意：Agent 必须一个一个跑（串行），因为「逐日行程」和「预算」这两个
-Agent 要读前面 Agent 的累积结果，不能凭空编排。
 """
 
 import asyncio
@@ -22,9 +11,9 @@ from loguru import logger
 
 # 6 个专职 Agent
 from agents.destination import destination_agent
-from agents.flight import flight_search_agent
-from agents.hotel import hotel_search_agent
-from agents.food import dining_agent
+from agents.flight import flight_agent
+from agents.hotel import hotel_agent
+from agents.dining import dining_agent
 from agents.itinerary import itinerary_agent
 from agents.budget import budget_agent
 # 结构化转换：把 Markdown 转成 JSON
@@ -75,7 +64,7 @@ def _fallback_structured_response(
     destination_text: str,
     flight_text: str,
     hotel_text: str,
-    restaurant_text: str,
+    dining_text: str,
     itinerary_text: str,
     budget_text: str,
 ) -> str:
@@ -142,10 +131,12 @@ def _fallback_structured_response(
                 "stops": 0,
             }
         ],
+        # 注意：这个 key 必须叫 restaurants —— 它是 TravelPlanTeamResponse 的字段名，
+        # 也是前端 page.tsx 读的键（trip.itinerary.restaurants），属于「对外契约」，不能改
         "restaurants": [
             {
                 "name": f"Recommended dining in {request.destination}",
-                "description": _clip(restaurant_text, 800),
+                "description": _clip(dining_text, 800),
                 "location": request.destination or "",
                 "url": "",
             }
@@ -365,7 +356,7 @@ async def generate_travel_plan(request: TravelPlanAgentRequest) -> str:
 
             Give top 5 hotels.
             """
-        restaurant_prompt = f"""
+        dining_prompt = f"""
             Please find restaurants according to the user's travel request:
             {travel_request_md}
 
@@ -387,26 +378,26 @@ async def generate_travel_plan(request: TravelPlanAgentRequest) -> str:
         # asyncio.gather：同时把 4 个请求发出去，等它们全部跑完
         # 返回值按括号里的先后顺序装成一个元组，所以左边能一一对应接住
         (
-            destination_research_response,
+            destination_search_response,
             flight_search_response,
             hotel_search_response,
-            restaurant_search_response,
+            dining_search_response,
         ) = await asyncio.gather(
             destination_agent.arun(destination_prompt),
-            flight_search_agent.arun(flight_prompt),
-            hotel_search_agent.arun(hotel_prompt),
-            dining_agent.arun(restaurant_prompt),
+            flight_agent.arun(flight_prompt),
+            hotel_agent.arun(hotel_prompt),
+            dining_agent.arun(dining_prompt),
         )
 
         # 4 个都跑完之后，再按固定顺序拼进累积文本
         # （顺序必须固定，因为后面的行程/预算 Agent 要读这段累积结果）
         logger.info(
-            f"Destination research response: {destination_research_response.messages[-1].content}"
+            f"Destination research response: {destination_search_response.messages[-1].content}"
         )
         last_response_content = f"""
         ## Destination Attractions:
         ---
-        {destination_research_response.messages[-1].content}
+        {destination_search_response.messages[-1].content}
         ---
         """
 
@@ -431,12 +422,12 @@ async def generate_travel_plan(request: TravelPlanAgentRequest) -> str:
         """
 
         logger.info(
-            f"Restaurant search response: {restaurant_search_response.messages[-1].content}"
+            f"Restaurant search response: {dining_search_response.messages[-1].content}"
         )
         last_response_content += f"""
         ## Restaurant recommendations:
         ---
-        {restaurant_search_response.messages[-1].content}
+        {dining_search_response.messages[-1].content}
         ---
         """
 
@@ -515,10 +506,10 @@ async def generate_travel_plan(request: TravelPlanAgentRequest) -> str:
             logger.exception("Structured conversion failed, using fallback")
             json_response_output = _fallback_structured_response(
                 request=request.travel_plan,
-                destination_text=destination_research_response.messages[-1].content,
+                destination_text=destination_search_response.messages[-1].content,
                 flight_text=flight_search_response.messages[-1].content,
                 hotel_text=hotel_search_response.messages[-1].content,
-                restaurant_text=restaurant_search_response.messages[-1].content,
+                dining_text=dining_search_response.messages[-1].content,
                 itinerary_text=itinerary_response.messages[-1].content,
                 budget_text=budget_response.messages[-1].content,
             )
@@ -531,10 +522,10 @@ async def generate_travel_plan(request: TravelPlanAgentRequest) -> str:
             {
                 "itinerary": json_response_output,
                 "budget_agent_response": budget_response.messages[-1].content,
-                "destination_agent_response": destination_research_response.messages[-1].content,
+                "destination_agent_response": destination_search_response.messages[-1].content,
                 "flight_agent_response": flight_search_response.messages[-1].content,
                 "hotel_agent_response": hotel_search_response.messages[-1].content,
-                "restaurant_agent_response": restaurant_search_response.messages[-1].content,
+                "restaurant_agent_response": dining_search_response.messages[-1].content,
                 "itinerary_agent_response": itinerary_response.messages[-1].content,
             },
             indent=2,  # 缩进 2 格，方便人类直接阅读存储的 JSON

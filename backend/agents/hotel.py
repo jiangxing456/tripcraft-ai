@@ -3,7 +3,7 @@ from tools.kayak_hotel import kayak_hotel_url_generator
 from tools.scrape import scrape_website
 from config.llm import model
 
-hotel_search_agent = Agent(
+hotel_agent = Agent(
     name="Hotel Search Assistant",
     model=model,
     tools=[

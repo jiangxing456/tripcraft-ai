@@ -73,7 +73,7 @@ async def trigger_trip_craft_agent(#async是标记这个函数是异步的，awa
                 logger.info(f"Task updated to error: {task.id}")
                 raise#把堆栈打出来。​ 不写的话，你只看到数据库里一条 error 状态，日志里查不到任何线索
 
-        # 丢到后台事件循环中异步执行，不阻塞当前请求的返回
+        # 丢到后台事件循环中异步执行，不阻塞当前请求的返回 asyncio也叫异步IO库
         asyncio.create_task(generate_plan_with_tracking())#create_task 返回的不是结果，是一张票据（Task 对象）​
 
         logger.info(

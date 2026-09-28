@@ -3,7 +3,7 @@ from agno.tools.firecrawl import FirecrawlTools
 from tools.google_flight import get_google_flights
 from config.llm import model
 
-flight_search_agent = Agent(
+flight_agent = Agent(
     name="Flight Search Assistant",
     model=model,
     tools=[
