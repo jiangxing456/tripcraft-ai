@@ -1,0 +1,15 @@
+TripCraft Multi-Agent Travel Planner
+
+Current maintainer: 姜兴林 (jiangxing456)
+Project: https://github.com/jiangxing456/tripcraft-ai
+
+Early travel-planning example and portions of the frontend originated from:
+awesome-llm-apps
+https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team
+
+This version replaces the original Agent orchestration with LangGraph/LangChain,
+adds MCP tools, deterministic budget checks, bounded hotel replanning,
+PostgreSQL checkpoints, human confirmation, SSE, preference persistence,
+Redis search caching, access checks, tests and Windows start/stop scripts.
+
+The upstream Apache License 2.0 text is retained in LICENSE.

@@ -12,3 +12,7 @@ lib/generated/
 
 .env
 .env.local
+
+# Local coverage and browser debugging artifacts
+.coverage
+.dbg-*

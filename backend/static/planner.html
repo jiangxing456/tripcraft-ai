@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  />
+  <title>TripCraft · 规划实验室</title>
+  <style>
+    :root {
+      --blue: #2b7fd8;
+      --yellow: #f4d758;
+      --red: #e84a5f;
+      --cream: #fefcf6;
+      --ink: #1a1a2e;
+      --muted: #626272;
+      --border: #e4e3db;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+    body {
+      font:
+        15px/1.65 "Microsoft YaHei",
+        sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+    }
+    ::selection {
+      background: var(--yellow);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 15px max(24px, calc((100vw - 1180px) / 2));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    header b {
+      color: var(--blue);
+      font-size: 20px;
+    }
+    main {
+      max-width: 1180px;
+      margin: auto;
+      padding: 32px 24px;
+    }
+    h1,
+    h2 {
+      font-family: "Noto Serif SC", "SimSun", serif;
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.3;
+      margin: 12px 0;
+    }
+    h2 {
+      font-size: 21px;
+      margin-bottom: 16px;
+    }
+    .intro {
+      max-width: 790px;
+      margin-bottom: 26px;
+    }
+    .tag {
+      display: inline-block;
+      background: #fff2ad;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card + .card {
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 13px 0 5px;
+    }
+    input {
+      font: inherit;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #bcbcc6;
+      border-radius: 7px;
+      background: #fff;
+    }
+    button {
+      font: inherit;
+      font-weight: 600;
+      border: 0;
+      border-radius: 7px;
+      padding: 11px 16px;
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    button:hover {
+      filter: brightness(0.9);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    button.secondary {
+      background: #eef5fc;
+      color: #1a5897;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 3px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .big {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 14px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+    th,
+    td {
+      text-align: left;
+      padding: 10px 5px;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    td:last-child,
+    th:last-child {
+      text-align: right;
+    }
+    #issues {
+      color: #ae2d43;
+      white-space: pre-line;
+      margin-top: 16px;
+    }
+    #timeline {
+      list-style: none;
+      padding: 0;
+      max-height: 450px;
+      overflow: auto;
+    }
+    #timeline li {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      padding: 13px 0;
+      border-bottom: 1px solid #eee;
+    }
+    #timeline small {
+      color: var(--blue);
+      font-weight: bold;
+    }
+    #timeline p {
+      font-size: 13px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    details {
+      margin-top: 18px;
+      font-size: 13px;
+    }
+    summary {
+      cursor: pointer;
+      color: var(--blue);
+    }
+    pre {
+      background: #f6f7f8;
+      padding: 15px;
+      border-radius: 7px;
+      white-space: pre-wrap;
+      max-height: 340px;
+      overflow: auto;
+      font:
+        12px/1.7 Consolas,
+        monospace;
+    }
+    #notice {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .status {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+    }
+    .connection {
+      font-size: 12px;
+      text-align: right;
+    }
+    #days {
+      font-size: 14px;
+      white-space: pre-line;
+      margin-top: 16px;
+    }
+    .wide {
+      margin-top: 24px;
+    }
+    .number {
+      font:
+        italic 34px Georgia,
+        serif;
+      color: #b9d4f3;
+    }
+    .heading {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .heading h2 {
+      margin: 0;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .connection {
+        max-width: 200px;
+      }
+      main {
+        padding: 24px 16px;
+      }
+      .card {
+        padding: 20px;
+      }
+      header {
+        padding: 12px 16px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+  </style>
+  <header>
+    <b>TripCraft <span class="muted">/ 规划实验室</span></b
+    ><span id="connection" class="connection">正在检查运行环境…</span>
+  </header>
+  <main>
+    <section class="intro">
+      <span id="mode" class="tag">读取模式</span>
+      <h1>让每一步规划，都有依据。</h1>
+      <p class="muted">
+        观察并行调研、预算校验和局部重规划。方案完成后由你确认，也可以调整预算继续执行。
+      </p>
+    </section>
+    <div class="grid">
+      <section class="card">
+        <div class="heading">
+          <span class="number">01</span>
+          <h2>旅行需求</h2>
+        </div>
+        <form id="form">
+          <label for="origin">出发地</label
+          ><input id="origin" value="北京" required maxlength="80" />
+          <label for="destination">目的地</label
+          ><input id="destination" value="成都" required maxlength="80" />
+          <label for="start">出发日期</label
+          ><input id="start" type="date" value="2026-10-28" required />
+          <label for="duration">旅行天数</label
+          ><input
+            id="duration"
+            type="number"
+            value="3"
+            min="1"
+            max="14"
+            required
+          />
+          <label for="budget">每人预算（CNY）</label
+          ><input
+            id="budget"
+            type="number"
+            value="3000"
+            min="1"
+            max="10000000"
+            required
+          />
+          <div class="actions"><button id="run">开始规划</button></div>
+        </form>
+        <p id="notice">
+          固定样本中高档酒店会导致超预算，系统将尝试更换酒店。所有报价均为演示数据，不可预订。
+        </p>
+      </section>
+      <section class="card" aria-live="polite">
+        <div class="metric">
+          <div>
+            <p class="muted">方案总价 / CNY</p>
+            <div id="total" class="big">—</div>
+          </div>
+          <span id="status" class="status">等待开始</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>费用类别</th>
+              <th>单价 × 数量</th>
+              <th>小计</th>
+            </tr>
+          </thead>
+          <tbody id="expenses"></tbody>
+        </table>
+        <p id="issues"></p>
+        <div id="days"></div>
+        <div class="actions">
+          <button id="approve" disabled>确认方案</button
+          ><button id="revise" class="secondary" disabled>
+            按左侧新预算重规划
+          </button>
+        </div>
+        <details>
+          <summary>查看当前状态 JSON</summary>
+          <pre id="json">尚未生成</pre>
+        </details>
+        <details>
+          <summary>查看检查点历史</summary>
+          <pre id="history">尚未生成</pre>
+        </details>
+      </section>
+    </div>
+    <section class="card wide">
+      <div class="heading">
+        <span class="number">02</span>
+        <h2>实时执行过程</h2>
+      </div>
+      <p class="muted">
+        事件通过 SSE 推送。再次运行相同需求可以观察 Redis 缓存命中。
+      </p>
+      <ol id="timeline" aria-live="polite"></ol>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const names = {
+      destination: "目的地调研",
+      flight: "航班查询",
+      hotel: "酒店查询",
+      dining: "餐饮调研",
+      compose: "生成行程",
+      validate: "校验硬约束",
+      repair_hotel: "局部重规划：重新选酒店",
+      review: "人工确认",
+      paused: "等待确认",
+      finished: "任务完成",
+      error: "执行失败",
+    };
+    let run = null,
+      cursor = 0,
+      streaming = false;
+    async function api(path, options = {}) {
+      const response = await fetch("/api/planner/" + path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(run ? { "X-Run-Token": run.token } : {}),
+          ...options.headers,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw Error(
+          typeof data.detail === "string"
+            ? data.detail
+            : JSON.stringify(data.detail),
+        );
+      }
+      return response;
+    }
+    function log(event) {
+      const li = document.createElement("li"),
+        n = document.createElement("small"),
+        content = document.createElement("div"),
+        title = document.createElement("b"),
+        detail = document.createElement("p");
+      n.textContent = String(event.id).padStart(2, "0");
+      title.textContent = names[event.node] || event.node;
+      const d = event.data || {};
+      detail.textContent = d.issues?.length
+        ? d.issues.join("；")
+        : d.total
+          ? `核算总价 ${d.total} CNY`
+          : d.cache_hits
+            ? Object.entries(d.cache_hits)
+                .map(
+                  ([k, v]) =>
+                    `${names[k] || k} · ${v ? "Redis 命中" : "调用工具"}`,
+                )
+                .join(" / ")
+            : d.message
+              ? typeof d.message === "string"
+                ? d.message
+                : JSON.stringify(d.message)
+              : d.status || "节点执行完成";
+      content.append(title, detail);
+      li.append(n, content);
+      $("timeline").append(li);
+      $("timeline").scrollTop = $("timeline").scrollHeight;
+    }
+    async function refresh() {
+      if (!run) return;
+      const state = await (await api("runs/" + run.run_id)).json();
+      $("json").textContent = JSON.stringify(state, null, 2);
+      $("total").textContent = state.total || "—";
+      const labels = {
+        running: "正在执行",
+        validating: "正在校验",
+        awaiting_approval: "校验通过 · 待确认",
+        needs_review: "约束未满足",
+        completed: "已确认完成",
+        failed: "执行失败",
+        revising: "重新规划中",
+      };
+      $("status").textContent = labels[state.status] || "准备执行";
+      $("issues").textContent = state.error || (state.issues || []).join("\n");
+      $("expenses").replaceChildren();
+      for (const e of state.draft?.expenses || []) {
+        const row = document.createElement("tr");
+        for (const text of [
+          {
+            flight: "交通",
+            hotel: "住宿",
+            dining: "餐饮",
+            activities: "活动",
+          }[e.category],
+          `${e.unit_price} × ${e.quantity}`,
+          String(Number(e.unit_price) * e.quantity),
+        ]) {
+          const cell = document.createElement("td");
+          cell.textContent = text;
+          row.append(cell);
+        }
+        $("expenses").append(row);
+      }
+      $("days").textContent = (state.draft?.itinerary?.day_by_day_plan || [])
+        .map((d) => `${d.date} · ${d.morning}`)
+        .join("\n");
+      const paused =
+        !state.running &&
+        ["awaiting_approval", "needs_review"].includes(state.status);
+      $("approve").disabled = !paused || Boolean(state.issues?.length);
+      $("revise").disabled = !paused;
+      const h = await (await api("runs/" + run.run_id + "/history")).json();
+      $("history").textContent = JSON.stringify(h.versions, null, 2);
+    }
+    async function stream() {
+      if (streaming) return;
+      streaming = true;
+      try {
+        const response = await api(`runs/${run.run_id}/events?after=${cursor}`);
+        const reader = response.body.getReader(),
+          decoder = new TextDecoder();
+        let buffer = "";
+        for (;;) {
+          const { done, value } = await reader.read();
+          buffer += decoder
+            .decode(value || new Uint8Array(), { stream: !done })
+            .replace(/\r\n/g, "\n");
+          let end;
+          while ((end = buffer.indexOf("\n\n")) >= 0) {
+            const block = buffer.slice(0, end);
+            buffer = buffer.slice(end + 2);
+            const line = block.split("\n").find((x) => x.startsWith("data: "));
+            if (line && !block.includes("event: end")) {
+              const e = JSON.parse(line.slice(6));
+              if (e.id > cursor) {
+                cursor = e.id;
+                log(e);
+              }
+            }
+          }
+          if (done) break;
+        }
+        await refresh();
+      } catch (e) {
+        $("status").textContent = e.message;
+      } finally {
+        streaming = false;
+        $("run").disabled = false;
+      }
+    }
+    $("form").onsubmit = async (event) => {
+      event.preventDefault();
+      $("run").disabled = true;
+      $("approve").disabled = true;
+      $("revise").disabled = true;
+      try {
+        const body = {
+          starting_location: $("origin").value,
+          destination: $("destination").value,
+          duration: Number($("duration").value),
+          travel_dates: { start: $("start").value },
+          budget: Number($("budget").value),
+          budget_currency: "CNY",
+          adults: 1,
+          rooms: 1,
+        };
+        run = await (
+          await api("runs", { method: "POST", body: JSON.stringify(body) })
+        ).json();
+        localStorage.setItem("tripcraft-run", JSON.stringify(run));
+        cursor = 0;
+        $("timeline").replaceChildren();
+        $("status").textContent = "正在执行";
+        await stream();
+      } catch (e) {
+        $("status").textContent = e.message;
+        $("run").disabled = false;
+      }
+    };
+    async function resume(action) {
+      if (!$("budget").reportValidity()) return;
+      $("approve").disabled = true;
+      $("revise").disabled = true;
+      $("run").disabled = true;
+      try {
+        await api(`runs/${run.run_id}/resume`, {
+          method: "POST",
+          body: JSON.stringify({ action, budget: Number($("budget").value) }),
+        });
+        await stream();
+      } catch (e) {
+        $("status").textContent = e.message;
+        $("run").disabled = false;
+        await refresh();
+      }
+    }
+    $("approve").onclick = () => resume("approve");
+    $("revise").onclick = () => resume("revise");
+    (async () => {
+      try {
+        const info = await (await api("info")).json();
+        $("mode").textContent = info.demo
+          ? "固定数据演示 · 不调用大模型"
+          : "真实查询 · 将调用模型与外部服务";
+        $("connection").textContent =
+          `检查点：${info.checkpoint} ｜ Redis：${info.redis ? "已连接" : "未连接，直接查询"}`;
+        if (!info.demo) {
+          $("notice").textContent =
+            "真实航班查询请填写 IATA 机场代码。外部资料可能缺少价格，此时系统会明确报错；生成结果需人工核实。";
+          $("origin").value = "PEK";
+          $("destination").value = "CTU";
+        }
+        const saved = localStorage.getItem("tripcraft-run");
+        if (saved) {
+          run = JSON.parse(saved);
+          try {
+            await refresh();
+            await stream();
+          } catch {
+            run = null;
+            localStorage.removeItem("tripcraft-run");
+          }
+        }
+      } catch (e) {
+        $("connection").textContent = e.message;
+      }
+    })();
+  </script>
+</html>

@@ -275,41 +275,26 @@ export default function Plan() {
   // can trigger React DOM insertBefore crashes after hydration.
   if (sessionError) {
     console.error("Session error:", sessionError);
-    // Continue without session data - allow anonymous users
   }
 
   const onSubmit = async (data: TripFormData) => {
     setIsSubmitting(true);
     setSubmitMessage(null);
 
-    // Debug: Log the data being submitted
-    console.log("Form data being submitted:", data);
-    console.log("Personal touch data:", {
-      beenThereBefore: data.beenThereBefore,
-      lovedPlaces: data.lovedPlaces,
-      additionalInfo: data.additionalInfo,
-    });
-
     try {
-      // Include user ID from session if available
-      const submitData = {
-        ...data,
-        userId: session?.user?.id || null, // Include user ID from Better Auth session
-      };
-
       const response = await fetch("/api/plan/submit", {//前端与后端交互的中转
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
       if (result.success) {
         setSubmitMessage("🎉 Your trip plan has been submitted successfully!");
-        console.log("Trip submitted with ID:", result.tripPlanId);
+
 
         // Show success message briefly, then redirect to the plan details page
         setTimeout(() => {
@@ -827,7 +812,7 @@ export default function Plan() {
                                 </FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder="e.g., July 10 – July 17, August 2025 (flexible), Summer 2025"
+                                    placeholder="YYYY-MM-DD (e.g., 2026-10-28)"
                                     {...field}
                                     value={field.value ?? ""}
                                     className="h-12 text-base"

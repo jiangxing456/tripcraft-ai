@@ -1,37 +1,51 @@
-from pydantic import BaseModel, Field
+from datetime import date, timedelta
+from pydantic import BaseModel, Field, model_validator
 from typing import List
 from models.hotel import HotelResult
 
 
-
 class TravelDates(BaseModel):
-    start: str = ""#出发开始日期
-    end: str = ""#结束日期
+    start: str = Field(min_length=10, max_length=40)
+    end: str = ""  # 结束日期
 
 
 class TravelPlanRequest(BaseModel):
+    user_id: str = ""  # 用户标识，用于长期记忆；为空则跳过记忆功能（向后兼容）
     name: str = ""
-    destination: str = ""
-    starting_location: str = ""
-    travel_dates: TravelDates = TravelDates()
+    destination: str = Field(min_length=1, max_length=100)
+    starting_location: str = Field(min_length=1, max_length=100)
+    travel_dates: TravelDates
     date_input_type: str = "picker"
-    duration: int = 0
+    duration: int = Field(default=1, ge=1, le=14)
     traveling_with: str = ""
-    adults: int = 1
-    children: int = 0
+    adults: int = Field(default=1, ge=1, le=20)
+    children: int = Field(default=0, ge=0, le=20)
     age_groups: List[str] = []
-    budget: int = 75000
-    budget_currency: str = "INR"
+    budget: int = Field(default=75000, gt=0, le=10_000_000)
+    budget_currency: str = Field(default="INR", pattern=r"^[A-Z]{3}$")
     travel_style: str = ""
     budget_flexible: bool = False
     vibes: List[str] = []
     priorities: List[str] = []
     interests: str = ""
-    rooms: int = 1
+    rooms: int = Field(default=1, ge=1, le=20)
     pace: List[int] = [3]
     been_there_before: str = ""
     loved_places: str = ""
     additional_info: str = ""
+
+    @model_validator(mode="after")
+    def check_dates(self):
+        start = date.fromisoformat(self.travel_dates.start[:10])
+        end = start + timedelta(days=self.duration - 1)
+        if (
+            self.travel_dates.end
+            and date.fromisoformat(self.travel_dates.end[:10]) != end
+        ):
+            raise ValueError("结束日期与旅行天数不一致")
+        self.travel_dates.start = start.isoformat()
+        self.travel_dates.end = end.isoformat()
+        return self
 
 
 class TravelPlanAgentRequest(BaseModel):

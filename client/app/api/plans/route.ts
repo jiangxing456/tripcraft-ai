@@ -1,29 +1,27 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const tripPlans = await prisma.tripPlan.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+      return NextResponse.json(
+        { success: false, message: 'Sign in required' },
+        { status: 401 },
+      );
+    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        tripPlans
-      },
-      { status: 200 }
-    );
+    const tripPlans = await prisma.tripPlan.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    return NextResponse.json({ success: true, tripPlans });
   } catch (error) {
-    console.error('Error fetching trip plans:', error);
+    console.error('Trip list failed:', error);
     return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch trip plans'
-      },
-      { status: 500 }
+      { success: false, message: 'Failed to fetch trip plans' },
+      { status: 500 },
     );
   }
 }

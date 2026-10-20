@@ -226,7 +226,7 @@ export default function TripDetailsPage() {
       const response = await fetch(`/api/plans/${tripId}`);
       const data = await response.json();
 
-      console.log("API Response:", data);
+
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch trip details");
@@ -235,7 +235,7 @@ export default function TripDetailsPage() {
       if (data.success && data.tripPlan) {
         // Convert raw data to our TripDetails format
         const tripPlan = data.tripPlan;
-        console.log("Trip plan data:", tripPlan);
+
 
         // Map the database status to our TripDetails status
         let status: TripDetails["status"] = "pending";
@@ -269,7 +269,7 @@ export default function TripDetailsPage() {
           try {
             // First parse the outer JSON string
             const parsedOutput = JSON.parse(tripPlan.output.itinerary);
-            console.log("Parsed output:", parsedOutput);
+
 
             // Extract agent responses from the parsed JSON
             budget_agent_response = parsedOutput.budget_agent_response || "";
@@ -284,15 +284,15 @@ export default function TripDetailsPage() {
             if (parsedOutput.itinerary) {
               // Then parse the inner JSON string to get the actual itinerary
               itinerary = JSON.parse(parsedOutput.itinerary) as Itinerary;
-              console.log("Parsed itinerary:", itinerary);
+
             }
           } catch (e) {
             console.error("Failed to parse itinerary JSON:", e);
           }
         }
 
-        console.log("Budget agent response:", budget_agent_response);
-        console.log("Destination agent response:", destination_agent_response);
+
+
 
         const tripDetails: TripDetails = {
           id: tripPlan.id,
@@ -336,7 +336,7 @@ export default function TripDetailsPage() {
           additionalInfo: tripPlan.additionalInfo ?? undefined,
         };
 
-        console.log("Setting trip state:", tripDetails);
+
         setTrip(tripDetails);
       } else {
         setError("Trip plan not found");

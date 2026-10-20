@@ -4,11 +4,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 
 export async function middleware(request: NextRequest) {
 
-  console.log("Host: ", BASE_URL);
+
 
   const url = `${BASE_URL}/api/auth/get-session`;
 
-  console.log("URL: ", url);
+
 
   const response = await fetch(url, {
     headers: {

@@ -1,20 +1,21 @@
-"""
-统一的 LLM 配置 —— 全项目的 Agent 共用这一个模型实例。
+"""延迟创建模型：演示和单元测试不需要 API 密钥。"""
 
-想换模型，只改这个文件就够了：
-    本地 Ollama  →  DeepSeek(id="qwen2.5:3b") / Ollama(id="qwen2.5:3b")
-    云端 DeepSeek →  DeepSeek(id="deepseek-flash")   ← 当前使用
-"""
-
+import os
 from pathlib import Path
-
-from agno.models.deepseek import DeepSeek
 from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 
-# 本文件位于 backend/config/，parents[1] 即 backend/，
-# 这样不管从哪个目录启动，都能正确读到 backend/.env
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-# deepseek-flash 即 DeepSeek-V4.1-Flash，走官方 OpenAI 兼容接口。
-# 密钥自动从环境变量 DEEPSEEK_API_KEY 读取，不硬编码在代码里。
-model = DeepSeek(id="deepseek-flash")
+
+def get_model():
+    return ChatOpenAI(
+        model=os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),
+        api_key=os.environ["DEEPSEEK_API_KEY"],
+        base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        # DeepSeek 思考模式不支持结构化输出所需的指定 tool_choice。
+        extra_body={"thinking": {"type": "disabled"}},
+        temperature=0,
+        timeout=60,
+        max_retries=2,
+    )
